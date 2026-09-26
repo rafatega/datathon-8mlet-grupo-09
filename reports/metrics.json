@@ -1,0 +1,259 @@
+{
+  "dataset_sha256": "74adfc578bf77a7ff4bb1ba4a9f8709d9e3c6907342959c2c8416847e0afb4d8",
+  "n_rows_clean": 41176,
+  "n_eval_events": 29040,
+  "n_test_events": 14520,
+  "n_seeds": 30,
+  "n_val_seeds": 10,
+  "segment_definition": "faixa_etaria(<=30,31-59,>=60) x poutcome==success",
+  "best_historical_arm": "cellular",
+  "selected": {
+    "gamma_ts": 0.99,
+    "epsilon_eg": 0.1,
+    "gamma_eg": 0.999
+  },
+  "validation": [
+    {
+      "policy": "ts_contextual",
+      "gamma": 1.0,
+      "epsilon": null,
+      "snips_validacao": 0.059743832898958085
+    },
+    {
+      "policy": "ts_contextual",
+      "gamma": 0.999,
+      "epsilon": null,
+      "snips_validacao": 0.0687411411541558
+    },
+    {
+      "policy": "ts_contextual",
+      "gamma": 0.995,
+      "epsilon": null,
+      "snips_validacao": 0.06848471656039268
+    },
+    {
+      "policy": "ts_contextual",
+      "gamma": 0.99,
+      "epsilon": null,
+      "snips_validacao": 0.07087513721154728
+    },
+    {
+      "policy": "eg_contextual",
+      "gamma": 1.0,
+      "epsilon": 0.05,
+      "snips_validacao": 0.05842499286732389
+    },
+    {
+      "policy": "eg_contextual",
+      "gamma": 0.999,
+      "epsilon": 0.05,
+      "snips_validacao": 0.07441500537976434
+    },
+    {
+      "policy": "eg_contextual",
+      "gamma": 0.995,
+      "epsilon": 0.05,
+      "snips_validacao": 0.06847840349733926
+    },
+    {
+      "policy": "eg_contextual",
+      "gamma": 0.99,
+      "epsilon": 0.05,
+      "snips_validacao": 0.06788905867220976
+    },
+    {
+      "policy": "eg_contextual",
+      "gamma": 1.0,
+      "epsilon": 0.1,
+      "snips_validacao": 0.057843220541251614
+    },
+    {
+      "policy": "eg_contextual",
+      "gamma": 0.999,
+      "epsilon": 0.1,
+      "snips_validacao": 0.07483679984904992
+    },
+    {
+      "policy": "eg_contextual",
+      "gamma": 0.995,
+      "epsilon": 0.1,
+      "snips_validacao": 0.07117574798837395
+    },
+    {
+      "policy": "eg_contextual",
+      "gamma": 0.99,
+      "epsilon": 0.1,
+      "snips_validacao": 0.0669165963796691
+    },
+    {
+      "policy": "eg_contextual",
+      "gamma": 1.0,
+      "epsilon": 0.2,
+      "snips_validacao": 0.06197449064569899
+    },
+    {
+      "policy": "eg_contextual",
+      "gamma": 0.999,
+      "epsilon": 0.2,
+      "snips_validacao": 0.07056347306372913
+    },
+    {
+      "policy": "eg_contextual",
+      "gamma": 0.995,
+      "epsilon": 0.2,
+      "snips_validacao": 0.069137236211984
+    },
+    {
+      "policy": "eg_contextual",
+      "gamma": 0.99,
+      "epsilon": 0.2,
+      "snips_validacao": 0.07024520607865106
+    }
+  ],
+  "policies": {
+    "ab_deterministico": {
+      "snips_mean": 0.2001692575130653,
+      "snips_std": 0.0,
+      "pseudo_regret_final": 749.5179352243591,
+      "best_arm_share": 0.5,
+      "accepted_events": 7279.0,
+      "ess": 2325.380809429585,
+      "snips_by_segment": {
+        "jovem_sem_sucesso": 0.1824626744860158,
+        "jovem_com_sucesso": 0.673170164259785,
+        "adulto_sem_sucesso": 0.14140968318393932,
+        "adulto_com_sucesso": 0.6491919383914978,
+        "senior_sem_sucesso": 0.32663159733033714,
+        "senior_com_sucesso": 0.7448130518537059
+      }
+    },
+    "sempre_telefone": {
+      "snips_mean": 0.15022005230066215,
+      "snips_std": 0.0,
+      "pseudo_regret_final": 1411.7204960565641,
+      "best_arm_share": 0.08264462809917356,
+      "accepted_events": 1433.0,
+      "ess": 1263.6244963058596,
+      "snips_by_segment": {
+        "jovem_sem_sucesso": 0.13344131017853936,
+        "jovem_com_sucesso": 0.6380062837192984,
+        "adulto_sem_sucesso": 0.10953055949438796,
+        "adulto_com_sucesso": 0.6284414488920577,
+        "senior_sem_sucesso": 0.23290482961603948,
+        "senior_com_sucesso": 0.8492972903349102
+      }
+    },
+    "melhor_historico": {
+      "snips_mean": 0.24398588225408072,
+      "snips_std": 0.0,
+      "pseudo_regret_final": 87.58478028128037,
+      "best_arm_share": 0.9173553719008265,
+      "accepted_events": 13087.0,
+      "ess": 13027.659813316504,
+      "snips_by_segment": {
+        "jovem_sem_sucesso": 0.24630991536298394,
+        "jovem_com_sucesso": 0.6369000576693247,
+        "adulto_sem_sucesso": 0.16403969085319225,
+        "adulto_com_sucesso": 0.6629141844947071,
+        "senior_sem_sucesso": 0.39322264570648174,
+        "senior_com_sucesso": 0.7595114893500009
+      }
+    },
+    "ts_contextual_desconto": {
+      "snips_mean": 0.20710036395041279,
+      "snips_std": 0.005264796557966097,
+      "pseudo_regret_final": 614.2681658814414,
+      "best_arm_share": 0.49390036730945824,
+      "accepted_events": 6772.1,
+      "ess": 2085.4951599627275,
+      "snips_by_segment": {
+        "jovem_sem_sucesso": 0.19299461777018315,
+        "jovem_com_sucesso": 0.6406101894033257,
+        "adulto_sem_sucesso": 0.1449122757657877,
+        "adulto_com_sucesso": 0.6605971909460856,
+        "senior_sem_sucesso": 0.3389712682084463,
+        "senior_com_sucesso": 0.7838131142342797
+      }
+    },
+    "ts_contextual_padrao": {
+      "snips_mean": 0.19964584734171786,
+      "snips_std": 0.01889053649459676,
+      "pseudo_regret_final": 735.5608011665457,
+      "best_arm_share": 0.4597291092745639,
+      "accepted_events": 6408.133333333333,
+      "ess": 2850.119325974595,
+      "snips_by_segment": {
+        "jovem_sem_sucesso": 0.2031345504637514,
+        "jovem_com_sucesso": 0.6382484581868619,
+        "adulto_sem_sucesso": 0.12830403236655707,
+        "adulto_com_sucesso": 0.661308894804787,
+        "senior_sem_sucesso": 0.37253863144275545,
+        "senior_com_sucesso": 0.7849288637448019
+      }
+    },
+    "ts_sem_contexto_desconto": {
+      "snips_mean": 0.2187360801781031,
+      "snips_std": 0.003588132314895037,
+      "pseudo_regret_final": 475.84630400198034,
+      "best_arm_share": 0.5576790633608815,
+      "accepted_events": 7568.833333333333,
+      "ess": 2342.044095703129,
+      "snips_by_segment": {
+        "jovem_sem_sucesso": 0.21176524767367713,
+        "jovem_com_sucesso": 0.6607392615903059,
+        "adulto_sem_sucesso": 0.14776108196160476,
+        "adulto_com_sucesso": 0.6795359626357897,
+        "senior_sem_sucesso": 0.3233120034840575,
+        "senior_com_sucesso": 0.7671903917172664
+      }
+    },
+    "eg_contextual_desconto": {
+      "snips_mean": 0.18384894802523144,
+      "snips_std": 0.012619903041978393,
+      "pseudo_regret_final": 909.7676539540631,
+      "best_arm_share": 0.2971671258034894,
+      "accepted_events": 4014.2,
+      "ess": 1547.3247399606075,
+      "snips_by_segment": {
+        "jovem_sem_sucesso": 0.14946525984818074,
+        "jovem_com_sucesso": 0.6800536524606077,
+        "adulto_sem_sucesso": 0.12409512430122244,
+        "adulto_com_sucesso": 0.6646776974140073,
+        "senior_sem_sucesso": 0.3716770269976451,
+        "senior_com_sucesso": 0.8062480207483577
+      }
+    }
+  },
+  "comparison_vs_baseline": {
+    "sempre_telefone": {
+      "diff": -0.04994920521240323,
+      "ci_low": -0.09889426781352,
+      "ci_high": -0.03031514590197128
+    },
+    "melhor_historico": {
+      "diff": 0.0438166247410153,
+      "ci_low": 0.02054773322123449,
+      "ci_high": 0.08994669821172199
+    },
+    "ts_contextual_desconto": {
+      "diff": 0.00690592572273066,
+      "ci_low": -0.005699906856822967,
+      "ci_high": 0.03148611145446724
+    },
+    "ts_contextual_padrao": {
+      "diff": -0.0007314418146928681,
+      "ci_low": -0.013884101920535866,
+      "ci_high": 0.010185872852742351
+    },
+    "ts_sem_contexto_desconto": {
+      "diff": 0.01857586698180777,
+      "ci_low": 0.0030616031638529113,
+      "ci_high": 0.051975828060497116
+    },
+    "eg_contextual_desconto": {
+      "diff": -0.01649213393024304,
+      "ci_low": -0.027128411954580076,
+      "ci_high": -0.006469034720783128
+    }
+  }
+}

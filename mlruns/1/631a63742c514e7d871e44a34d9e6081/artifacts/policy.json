@@ -1,0 +1,76 @@
+{
+  "algorithm": "discounted_thompson_sampling",
+  "gamma": 0.99,
+  "prior": {
+    "alpha": 1.0,
+    "beta": 1.0
+  },
+  "arms": [
+    "cellular",
+    "telephone"
+  ],
+  "segments": {
+    "jovem_sem_sucesso": {
+      "cellular": {
+        "alpha": 32.604459,
+        "beta": 44.377069
+      },
+      "telephone": {
+        "alpha": 2.807879,
+        "beta": 24.210593
+      }
+    },
+    "jovem_com_sucesso": {
+      "cellular": {
+        "alpha": 59.551189,
+        "beta": 28.042523
+      },
+      "telephone": {
+        "alpha": 7.194246,
+        "beta": 6.711026
+      }
+    },
+    "adulto_sem_sucesso": {
+      "cellular": {
+        "alpha": 35.557238,
+        "beta": 50.06916
+      },
+      "telephone": {
+        "alpha": 3.588616,
+        "beta": 14.784986
+      }
+    },
+    "adulto_com_sucesso": {
+      "cellular": {
+        "alpha": 76.782817,
+        "beta": 17.692349
+      },
+      "telephone": {
+        "alpha": 6.430425,
+        "beta": 3.062828
+      }
+    },
+    "senior_sem_sucesso": {
+      "cellular": {
+        "alpha": 37.631844,
+        "beta": 49.995935
+      },
+      "telephone": {
+        "alpha": 6.228597,
+        "beta": 10.138754
+      }
+    },
+    "senior_com_sucesso": {
+      "cellular": {
+        "alpha": 63.506635,
+        "beta": 19.937281
+      },
+      "telephone": {
+        "alpha": 6.060952,
+        "beta": 1.625098
+      }
+    }
+  },
+  "dataset_sha256": "74adfc578bf77a7ff4bb1ba4a9f8709d9e3c6907342959c2c8416847e0afb4d8",
+  "trained_at": "2026-09-24T11:21:06.434855+00:00"
+}

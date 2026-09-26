@@ -1,0 +1,12 @@
+.venv/
+data/
+mlruns/
+notebooks/
+tests/
+reports/
+docs/
+doc/
+.git/
+.pytest_cache/
+**/__pycache__/
+*.egg-info/

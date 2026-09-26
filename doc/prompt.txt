@@ -1,0 +1,1013 @@
+# Datathon MLET — Planejamento e Desenvolvimento End-to-End
+
+Você é o agente responsável por conduzir o desenvolvimento completo de um projeto de Datathon de Machine Learning Engineering.
+
+O projeto deve ser desenvolvido de forma **end-to-end**, com foco em simplicidade, funcionamento real, reprodutibilidade, qualidade técnica e capacidade de demonstrar/defender as decisões tomadas.
+
+## 1. Fonte principal de requisitos
+
+O arquivo PDF do desafio fornecido junto a este prompt é a fonte principal dos requisitos obrigatórios.
+
+Antes de iniciar qualquer implementação:
+
+1. Leia integralmente o PDF.
+2. Extraia todos os requisitos, restrições, entregáveis e critérios de avaliação.
+3. Transforme esses requisitos em um checklist técnico.
+4. Identifique o que é:
+   - obrigatório;
+   - recomendado;
+   - opcional;
+   - não especificado no documento.
+5. Não invente requisitos do desafio.
+6. Não descarte nenhum requisito explícito do PDF.
+
+O objetivo principal é entregar exatamente o que a banca espera, sem adicionar complexidade desnecessária.
+
+---
+
+# 2. Contexto adicional aprendido no módulo
+
+Além dos requisitos explícitos do PDF, durante as aulas desta etapa foram abordados conceitos e ferramentas que podem ser relevantes para o projeto:
+
+- Data Storage;
+- Feature Store;
+- Feature engineering;
+- Mapeamento de fontes de dados;
+- Docker;
+- criação de Dockerfile;
+- criação de imagem Docker;
+- criação e execução de container;
+- registro/versionamento relacionado ao ambiente Docker;
+- testes unitários;
+- deploy;
+- modelo em produção;
+- arquitetura de produção;
+- Vercel.
+
+Esses itens NÃO devem ser adicionados automaticamente apenas porque foram ensinados.
+
+Para cada um deles, avalie se existe uma justificativa técnica real dentro da arquitetura deste projeto.
+
+Exemplo:
+
+> Se uma Feature Store não trouxer benefício real para este dataset, pipeline ou serving, não crie uma Feature Store artificial apenas para cumprir uma tecnologia ensinada em aula.
+
+O mesmo vale para qualquer outro componente.
+
+A prioridade deve ser:
+
+**Requisito do desafio > funcionamento correto > arquitetura coerente > conceitos aprendidos no módulo > complexidade adicional.**
+
+---
+
+# 3. Use uma abordagem Multi-Agent / Superpowers
+
+Antes de implementar, utilize o sistema de agentes disponível no ambiente (Superpowers ou equivalente) para dividir o trabalho em etapas especializadas.
+
+Não permita que um único agente simplesmente gere todo o projeto sem validação.
+
+Estruture o trabalho, no mínimo, com os seguintes papéis:
+
+### Agent 1 — Requirements Analyst
+
+Responsável por:
+
+- analisar o PDF;
+- extrair requisitos;
+- identificar entregáveis;
+- identificar critérios de avaliação;
+- montar checklist;
+- identificar ambiguidades;
+- separar requisitos obrigatórios de opcionais.
+
+### Agent 2 — Data Scientist / ML Specialist
+
+Responsável por:
+
+- analisar datasets candidatos;
+- avaliar adequação do dataset ao problema;
+- definir target;
+- definir features;
+- identificar leakage;
+- propor baseline;
+- propor algoritmo adaptativo;
+- definir estratégia de recompensa;
+- definir metodologia de avaliação;
+- avaliar se Thompson Sampling, Epsilon-Greedy, UCB ou abordagem contextual é adequada.
+
+### Agent 3 — MLE / Architecture
+
+Responsável por:
+
+- propor arquitetura end-to-end;
+- avaliar Data Storage;
+- avaliar Feature Store;
+- definir pipeline de dados;
+- definir estrutura do projeto;
+- definir serving;
+- avaliar Docker;
+- avaliar deploy;
+- avaliar Vercel;
+- definir estratégia de MLflow;
+- avaliar quais componentes realmente são necessários.
+
+### Agent 4 — MLOps / Production
+
+Responsável por:
+
+- reprodutibilidade;
+- versionamento;
+- MLflow;
+- Docker;
+- testes;
+- CI/CD, se fizer sentido;
+- deploy;
+- observabilidade;
+- configuração de ambiente;
+- gerenciamento de dependências;
+- segurança básica.
+
+### Agent 5 — Reviewer / Red Team
+
+Responsável por revisar criticamente o plano antes da implementação.
+
+Deve procurar:
+
+- leakage;
+- metodologia inválida;
+- reward mal definido;
+- baseline inadequado;
+- comparação injusta;
+- data leakage temporal;
+- overfitting;
+- métricas inadequadas;
+- complexidade desnecessária;
+- arquitetura incoerente;
+- requisitos do PDF não atendidos;
+- funcionalidades adicionadas apenas para "encher requisito";
+- problemas no deploy;
+- problemas de Docker;
+- problemas de reproducibilidade;
+- problemas nos testes;
+- problemas na apresentação final.
+
+### Agent 6 — Final Auditor
+
+Depois da implementação, deve revisar o projeto inteiro contra o checklist original e informar:
+
+- requisitos atendidos;
+- requisitos parcialmente atendidos;
+- requisitos não atendidos;
+- riscos;
+- problemas técnicos;
+- melhorias necessárias antes da entrega.
+
+---
+
+# 4. Primeira etapa obrigatória: NÃO CODAR
+
+Antes de escrever código, produza um plano técnico.
+
+O primeiro resultado deve conter:
+
+## A. Problem Statement
+
+Explique claramente:
+
+- qual é o problema de negócio;
+- quem é o usuário;
+- qual decisão o sistema precisa tomar;
+- quais são os "braços" / ações possíveis;
+- qual é a recompensa;
+- como o aprendizado adaptativo acontece.
+
+## B. Requirements Matrix
+
+Crie uma tabela:
+
+| Requisito | Fonte | Obrigatório? | Como será atendido | Evidência |
+|---|---|---:|---|---|
+
+Inclua todos os requisitos explícitos do PDF.
+
+## C. Architecture Proposal
+
+Proponha a arquitetura completa:
+
+```text
+Data Source
+    ↓
+Data Storage
+    ↓
+Data Preparation / Feature Engineering
+    ↓
+Feature Store (se realmente fizer sentido)
+    ↓
+Model / Bandit
+    ↓
+Evaluation
+    ↓
+Model Tracking
+    ↓
+Serving
+    ↓
+Docker
+    ↓
+Deployment
+    ↓
+Production Interface / API
+```
+
+Adapte esse desenho ao projeto real.
+
+Não assuma que todos os blocos acima precisam existir.
+
+## D. Architecture Decision Record
+
+Para cada componente adicional, explique:
+
+- por que existe;
+- qual problema resolve;
+- qual benefício entrega;
+- qual seria a alternativa mais simples;
+- por que foi escolhido.
+
+Especialmente para:
+
+- Feature Store;
+- Docker;
+- MLflow;
+- API;
+- Vercel;
+- cloud services;
+- CI/CD;
+- monitoramento.
+
+---
+
+# 5. Dataset
+
+O desafio exige uma base Kaggle compatível com:
+
+- marketing;
+- ofertas;
+- propensão;
+- campanhas;
+- recomendação;
+- conversão.
+
+As bases sugeridas no documento devem ser consideradas.
+
+Avalie pelo menos as alternativas relevantes antes de escolher.
+
+Para cada dataset candidato, avalie:
+
+- tamanho;
+- features;
+- target;
+- existência de múltiplos braços;
+- possibilidade de simular/representar ações diferentes;
+- qualidade dos dados;
+- missing values;
+- leakage;
+- temporalidade;
+- possibilidade de construir uma política adaptativa;
+- facilidade de demonstrar o projeto;
+- licença/fonte;
+- limitações.
+
+Não escolha um dataset apenas porque é mais fácil.
+
+Escolha o dataset que permita construir o experimento mais coerente com o desafio.
+
+---
+
+# 6. Definição do problema de Bandit
+
+Essa é uma das partes mais importantes.
+
+Defina explicitamente:
+
+### Contexto
+
+Quais características do cliente entram na decisão?
+
+### Arms
+
+Quais são as ofertas/mensagens/ações disponíveis?
+
+### Reward
+
+Qual evento representa sucesso?
+
+Exemplo:
+
+```text
+reward = 1 → conversão
+reward = 0 → não conversão
+```
+
+Mas não assuma esse formato sem analisar o dataset.
+
+### Policy
+
+Avaliar:
+
+- Thompson Sampling;
+- Epsilon-Greedy;
+- UCB;
+- contextual bandit, se fizer sentido.
+
+O documento permite essas alternativas, desde que a escolha seja justificada.
+
+Escolha a abordagem que melhor equilibre:
+
+- aderência ao desafio;
+- qualidade metodológica;
+- simplicidade;
+- possibilidade de explicação;
+- capacidade de demonstração.
+
+---
+
+# 7. Baseline
+
+O baseline deve ser definido antes do modelo adaptativo.
+
+Possibilidades:
+
+- melhor braço histórico;
+- regra fixa;
+- mesma oferta para todos;
+- política simples baseada em histórico;
+- outro baseline justificável.
+
+Documente:
+
+```text
+Baseline
+↓
+Hipótese
+↓
+Métrica
+↓
+Resultado
+```
+
+Não manipule o experimento para garantir artificialmente que o algoritmo adaptativo vença.
+
+Se o algoritmo adaptativo não superar o baseline, investigue o motivo.
+
+Possíveis causas:
+
+- reward inadequado;
+- exploração excessiva;
+- dataset inadequado;
+- algoritmo inadequado;
+- baseline forte;
+- simulação inadequada;
+- falta de contexto;
+- bug.
+
+O resultado deve ser metodologicamente defensável.
+
+---
+
+# 8. Avaliação
+
+Defina previamente as métricas.
+
+Não use somente accuracy sem avaliar se ela representa o problema.
+
+Considere, conforme aplicável:
+
+- conversion rate;
+- cumulative reward;
+- regret;
+- reward médio;
+- exploração vs. exploração;
+- performance por segmento;
+- performance por braço;
+- estabilidade;
+- comparação com baseline.
+
+Explique por que cada métrica foi escolhida.
+
+A avaliação deve permitir responder:
+
+> "O sistema adaptativo realmente aprende uma política melhor do que a política baseline?"
+
+---
+
+# 9. Data Leakage
+
+Faça uma revisão específica de leakage.
+
+O PDF menciona explicitamente a necessidade de descartar colunas de vazamento temporal, como `duration` no Bank Marketing.
+
+Portanto:
+
+1. Identifique possíveis colunas de leakage.
+2. Justifique a remoção.
+3. Documente isso no projeto.
+4. Garanta que nenhuma informação disponível apenas após a decisão seja utilizada como feature.
+
+Faça uma revisão independente especificamente para isso.
+
+---
+
+# 10. Feature Engineering
+
+Defina:
+
+- features utilizadas;
+- features descartadas;
+- tratamento de missing;
+- encoding;
+- normalização, se necessária;
+- categóricas;
+- numéricas;
+- possíveis interações;
+- transformações.
+
+Não faça feature engineering excessivo.
+
+Cada transformação deve ter justificativa.
+
+---
+
+# 11. Feature Store
+
+Avalie criticamente se uma Feature Store realmente faz sentido.
+
+Perguntas que devem ser respondidas:
+
+1. Existe reutilização relevante das features?
+2. Existe necessidade de consistência entre treinamento e serving?
+3. Existe pipeline de atualização?
+4. Existe necessidade de versionamento das features?
+5. O projeto se beneficia de separar feature computation de model serving?
+6. A complexidade adicional é justificável para o tamanho do projeto?
+
+Se a resposta for não:
+
+> NÃO implementar uma Feature Store artificial.
+
+Nesse caso, documentar a decisão e explicar como o conceito poderia ser utilizado em uma arquitetura de produção maior.
+
+Se fizer sentido, implementar uma versão proporcional ao projeto, sem criar infraestrutura desnecessária.
+
+---
+
+# 12. Data Storage
+
+Defina onde os dados ficarão armazenados durante:
+
+- desenvolvimento;
+- treinamento;
+- avaliação;
+- serving.
+
+Avalie opções simples antes de soluções complexas.
+
+A arquitetura deve ser suficiente para demonstrar o conceito sem criar uma infraestrutura que não agrega valor ao Datathon.
+
+---
+
+# 13. Docker
+
+O projeto deve ser avaliado para execução containerizada.
+
+Caso faça sentido — e salvo incompatibilidade com a plataforma de deploy escolhida — criar:
+
+```text
+Dockerfile
+.dockerignore
+requirements.txt ou pyproject.toml
+```
+
+O container deve permitir reproduzir o ambiente da aplicação.
+
+Validar:
+
+1. build da imagem;
+2. criação do container;
+3. execução;
+4. acesso à aplicação/API;
+5. funcionamento do modelo;
+6. configuração via environment variables;
+7. ausência de dependências locais ocultas.
+
+Documentar os comandos necessários.
+
+Exemplo conceitual:
+
+```bash
+docker build ...
+docker run ...
+```
+
+Não assumir que "ter Dockerfile" significa que Docker está funcionando.
+
+O container precisa ser efetivamente testado.
+
+---
+
+# 14. Deploy
+
+O PDF exige uma arquitetura-alvo em cloud e uma interface/serviço demonstrável.
+
+O ambiente planejado para deploy será **Vercel**, mas NÃO assuma que Vercel é automaticamente a melhor ou tecnicamente compatível solução para todos os componentes.
+
+Antes da implementação:
+
+- valide a compatibilidade do serving com Vercel;
+- valide limitações de runtime;
+- valide suporte ao formato do modelo;
+- valide limitações de tempo/memória;
+- valide como o modelo será carregado;
+- valide como o endpoint será exposto;
+- valide se o Docker será utilizado diretamente ou apenas no processo de desenvolvimento/build;
+- valide se existe algum componente que deve ser hospedado separadamente.
+
+Se Vercel não for adequado para determinado componente, não force a arquitetura.
+
+Proponha a solução mínima compatível.
+
+---
+
+# 15. MLflow / MLOps
+
+O PDF exige utilização de ferramenta de controle de versão/experiment tracking para registrar:
+
+- parâmetros;
+- métricas;
+- experimentos;
+- resultados do modelo.
+
+Utilizar MLflow localmente ou outra alternativa compatível, conforme o contexto do curso.
+
+Registrar pelo menos:
+
+```text
+experiment
+run
+algorithm
+hyperparameters
+dataset/version
+metrics
+model artifact
+```
+
+Avaliar também se faz sentido versionar:
+
+- dataset;
+- features;
+- modelo;
+- configuração;
+- código.
+
+Não criar uma infraestrutura MLOps exagerada.
+
+---
+
+# 16. Testes
+
+Criar testes unitários para as partes críticas.
+
+No mínimo avaliar testes para:
+
+- preprocessing;
+- feature engineering;
+- reward;
+- escolha de arm;
+- algoritmo;
+- inferência;
+- API/serving.
+
+Além disso, implementar o Golden Set solicitado pelo desafio:
+
+**5 exemplos de clientes**
+
+Para cada exemplo:
+
+```text
+cliente/contexto
+↓
+features
+↓
+ofertas disponíveis
+↓
+oferta escolhida
+↓
+resultado esperado
+↓
+resultado obtido
+```
+
+Os testes devem ajudar a demonstrar que o sistema funciona.
+
+---
+
+# 17. Estrutura do projeto
+
+Proponha uma estrutura organizada, por exemplo:
+
+```text
+project/
+│
+├── README.md
+├── requirements.txt
+├── Dockerfile
+├── .dockerignore
+├── .gitignore
+│
+├── data/
+│   └── README.md
+│
+├── notebooks/
+│   └── 01_eda_and_model.ipynb
+│
+├── src/
+│   ├── data/
+│   ├── features/
+│   ├── models/
+│   ├── bandit/
+│   ├── evaluation/
+│   └── serving/
+│
+├── tests/
+│   ├── test_features.py
+│   ├── test_bandit.py
+│   ├── test_model.py
+│   └── test_api.py
+│
+├── mlruns/
+│   └── ...
+│
+└── app/
+    └── ...
+```
+
+Adapte a estrutura ao projeto real.
+
+Não crie diretórios vazios ou abstrações sem necessidade.
+
+---
+
+# 18. README
+
+O README é um entregável central.
+
+Deve conter:
+
+## Problema
+
+Descrição objetiva do problema de negócio.
+
+## Dataset
+
+- fonte;
+- link;
+- versão;
+- licença;
+- features;
+- target;
+- limitações.
+
+## Metodologia
+
+- baseline;
+- algoritmo adaptativo;
+- reward;
+- exploração/explotação;
+- contexto.
+
+## EDA
+
+Resumo dos principais achados.
+
+## Modelagem
+
+Explicação da abordagem.
+
+## Avaliação
+
+Comparação com baseline.
+
+## Testes
+
+Golden Set com 5 exemplos.
+
+## Arquitetura
+
+Explicação da arquitetura escolhida.
+
+## Docker
+
+Como buildar e executar.
+
+## MLflow
+
+Como executar e consultar experimentos.
+
+## Deploy
+
+Como a aplicação é disponibilizada.
+
+## Limitações
+
+O que o projeto NÃO representa.
+
+## Como executar
+
+Passo a passo completo para outra pessoa conseguir reproduzir.
+
+---
+
+# 19. Demo
+
+A solução precisa ser demonstrável em poucos minutos.
+
+Preparar uma sequência de demonstração:
+
+```text
+1. Problema
+2. Dataset
+3. Baseline
+4. Bandit
+5. Comparação
+6. Exemplo de recomendação
+7. API / aplicação funcionando
+8. Arquitetura
+9. MLflow
+10. Conclusão
+```
+
+A apresentação deve ser compatível com o limite de aproximadamente 5 minutos definido no desafio.
+
+Priorizar demonstração prática em vez de excesso de slides.
+
+---
+
+# 20. Riscos que devem ser monitorados
+
+Durante todo o desenvolvimento, mantenha uma seção de riscos.
+
+No mínimo avaliar:
+
+### Risco 1 — Data Leakage
+
+Principalmente leakage temporal.
+
+### Risco 2 — Reward mal definido
+
+O reward precisa representar corretamente o objetivo do problema.
+
+### Risco 3 — Bandit artificial
+
+Evitar criar uma simulação onde o algoritmo necessariamente ganha.
+
+### Risco 4 — Baseline inadequado
+
+O baseline precisa ser uma comparação razoável.
+
+### Risco 5 — Overengineering
+
+Não criar infraestrutura apenas para demonstrar tecnologia.
+
+### Risco 6 — Dataset inadequado
+
+O dataset precisa permitir representar o problema de decisão adaptativa.
+
+### Risco 7 — Deploy incompatível
+
+Validar Vercel e runtime antes de construir a arquitetura final.
+
+### Risco 8 — Reprodutibilidade
+
+Outra pessoa deve conseguir executar o projeto.
+
+### Risco 9 — Model serving inconsistente
+
+Garantir que preprocessing utilizado em treinamento seja o mesmo utilizado em inferência.
+
+### Risco 10 — Resultado não reproduzível
+
+Fixar seeds quando apropriado e registrar parâmetros/versões.
+
+### Risco 11 — Complexidade excessiva
+
+Sempre perguntar:
+
+> "Isso melhora a solução ou apenas aumenta a quantidade de tecnologia?"
+
+---
+
+# 21. Regra de ouro
+
+Não implemente tecnologia para "encher requisito".
+
+O projeto deve ser:
+
+**simples → correto → reproduzível → demonstrável → tecnicamente defensável.**
+
+Se uma tecnologia ensinada no módulo não fizer sentido:
+
+1. não implemente;
+2. documente a decisão;
+3. explique por que ela não é necessária neste caso;
+4. se relevante, explique como seria utilizada em uma arquitetura de produção maior.
+
+---
+
+# 22. Processo obrigatório de execução
+
+Siga esta ordem:
+
+```text
+FASE 1
+Leitura completa do desafio
+        ↓
+FASE 2
+Requirements extraction
+        ↓
+FASE 3
+Multi-agent architecture review
+        ↓
+FASE 4
+Dataset selection
+        ↓
+FASE 5
+Problem formulation
+        ↓
+FASE 6
+Baseline definition
+        ↓
+FASE 7
+Bandit strategy
+        ↓
+FASE 8
+Evaluation methodology
+        ↓
+FASE 9
+Architecture validation
+        ↓
+FASE 10
+Implementation plan
+        ↓
+FASE 11
+Implementation
+        ↓
+FASE 12
+Unit tests
+        ↓
+FASE 13
+MLflow
+        ↓
+FASE 14
+Docker
+        ↓
+FASE 15
+Deploy validation
+        ↓
+FASE 16
+Vercel deployment
+        ↓
+FASE 17
+End-to-end tests
+        ↓
+FASE 18
+README
+        ↓
+FASE 19
+Demo preparation
+        ↓
+FASE 20
+Final audit
+```
+
+---
+
+# 23. Gate de aprovação antes de codar
+
+NÃO comece a implementação imediatamente.
+
+Primeiro entregue:
+
+1. Requirements Matrix;
+2. Dataset candidates;
+3. Dataset recommendation;
+4. Problem formulation;
+5. Baseline;
+6. Bandit strategy;
+7. Reward;
+8. Evaluation methodology;
+9. Architecture;
+10. Feature Store decision;
+11. Docker strategy;
+12. Deployment strategy;
+13. Testing strategy;
+14. MLflow strategy;
+15. Risks;
+16. Project structure;
+17. Execution plan.
+
+Depois faça uma revisão crítica utilizando os agentes.
+
+Somente após essa revisão prossiga para implementação.
+
+---
+
+# 24. Critério de qualidade final
+
+Antes de considerar o projeto pronto, responda objetivamente:
+
+### Requisitos do desafio
+
+- [ ] Todos os entregáveis do PDF foram atendidos?
+- [ ] README completo?
+- [ ] Kaggle referenciado?
+- [ ] EDA?
+- [ ] Baseline?
+- [ ] Algoritmo adaptativo?
+- [ ] Comparação?
+- [ ] 5 casos de teste?
+- [ ] Serviço/API?
+- [ ] Arquitetura cloud?
+- [ ] MLflow?
+- [ ] Vídeo/demo preparado?
+
+### Engenharia
+
+- [ ] Código reproduzível?
+- [ ] Testes unitários?
+- [ ] Docker funcionando?
+- [ ] Modelo funcionando fora do notebook?
+- [ ] Serving funcionando?
+- [ ] Deploy funcionando?
+- [ ] Dependências documentadas?
+
+### Machine Learning
+
+- [ ] Sem leakage?
+- [ ] Reward coerente?
+- [ ] Baseline defensável?
+- [ ] Avaliação correta?
+- [ ] Exploração/explotação documentada?
+- [ ] Resultados reproduzíveis?
+
+### Arquitetura
+
+- [ ] Feature Store realmente necessária?
+- [ ] Data Storage realmente necessário?
+- [ ] Docker realmente funcional?
+- [ ] Vercel tecnicamente compatível?
+- [ ] Nenhum componente foi adicionado apenas para "marcar presença"?
+
+### Apresentação
+
+- [ ] Problema compreensível?
+- [ ] Modelo explicável?
+- [ ] Resultado demonstrável?
+- [ ] API/app funcionando ao vivo?
+- [ ] Decisões técnicas defensáveis?
+
+---
+
+# 25. Resultado esperado desta primeira interação
+
+Nesta primeira interação, NÃO implemente o projeto.
+
+Entregue somente:
+
+1. **Resumo dos requisitos do desafio**
+2. **Requirements Matrix**
+3. **Proposta de arquitetura**
+4. **Avaliação de cada tecnologia adicional**
+5. **Datasets candidatos**
+6. **Recomendação de dataset com justificativa**
+7. **Formulação inicial do Bandit**
+8. **Baseline proposto**
+9. **Reward proposto**
+10. **Metodologia de avaliação**
+11. **Estratégia de Feature Store**
+12. **Estratégia de Docker**
+13. **Estratégia de deploy/Vercel**
+14. **Estratégia de MLflow**
+15. **Estratégia de testes**
+16. **Estrutura inicial do repositório**
+17. **Riscos**
+18. **Perguntas/ambiguidades que precisam ser resolvidas**
+19. **Plano de implementação por fases**
+20. **Checklist final de aceite**
+
+Somente depois da validação desse plano deverá começar a implementação.
+
+## Princípio final
+
+Não busque construir o projeto mais complexo.
+
+Busque construir o projeto que melhor demonstra:
+
+> **Machine Learning Engineering aplicado a uma decisão adaptativa, com pipeline reproduzível, avaliação correta, serving funcional e arquitetura tecnicamente justificável.**
