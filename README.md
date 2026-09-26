@@ -25,6 +25,7 @@
   - [11. API](#11-api)
   - [12. Docker](#12-docker)
   - [13. Testes](#13-testes)
+    - [Integração contínua (GitHub Actions)](#integração-contínua-github-actions)
   - [14. Como executar (passo a passo)](#14-como-executar-passo-a-passo)
   - [15. Estrutura do repositório](#15-estrutura-do-repositório)
   - [16. Roteiro do vídeo (até 5 min)](#16-roteiro-do-vídeo-até-5-min)
@@ -271,6 +272,17 @@ Roda toda a suíte, incluindo a execução completa dos dois notebooks via `nbco
 | `tests/test_notebooks.py` | Os dois notebooks executam do início ao fim sem erro (`nbconvert`) |
 | `tests/test_smoke.py` | Pacote `datathon` importável; dado bruto presente no repositório |
 
+### Integração contínua (GitHub Actions)
+
+O repositório tem um workflow de CI em `.github/workflows/ci.yml` que roda sozinho a cada pull request para a `main`, a cada push na `main` e também sob demanda pelo botão "Run workflow" na aba Actions. Ele sobe uma máquina Linux limpa e executa dois jobs em paralelo:
+
+| Job | O que faz |
+|---|---|
+| Testes (pytest) | Instala Python 3.13 e o `requirements.txt` do zero e roda `pytest -v`, incluindo a execução dos dois notebooks |
+| Docker (build e smoke test) | Roda `scripts/docker_smoke_test.sh`: build da imagem, sobe o container e valida `/health` e `/recommend` |
+
+Se algum job falhar, o PR fica marcado como reprovado e o log de cada passo fica disponível na aba Actions. O arquivo do workflow está todo comentado explicando cada trecho.
+
 ## 14. Como executar (passo a passo)
 
 **Pré-requisitos:**
@@ -333,6 +345,7 @@ docker run -p 8000:8000 datathon-bandit-api
 
 ```
 README.md  requirements.txt  requirements-api.txt  Dockerfile  .dockerignore  .gitignore  pyproject.toml
+.github/workflows/ci.yml         # CI: pytest + smoke test do Docker a cada PR
 doc/                             # enunciado do desafio (PDF) e prompt.txt
   POSTECH - MLET - DATATHON.pdf
   prompt.txt
