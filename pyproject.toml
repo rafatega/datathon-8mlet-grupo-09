@@ -15,3 +15,14 @@ testpaths = ["tests"]
 filterwarnings = [
     "ignore:Using `httpx` with `starlette.testclient` is deprecated:starlette.exceptions.StarletteDeprecationWarning",
 ]
+
+# Configuração do Bandit (scanner de segurança).
+# Atenção: o Bandit só lê esta seção quando é chamado com "-c pyproject.toml",
+# por exemplo: bandit -c pyproject.toml -r .
+[tool.bandit]
+# Pastas que ficam fora da análise, para ele olhar só para o nosso código:
+#   .venv  -> bibliotecas instaladas (numpy, pandas, mlflow...). Não é código nosso
+#             e sozinha gerava mais de 57 mil avisos.
+#   tests  -> os testes usam assert o tempo todo (aviso B101) e o teste dos
+#             notebooks chama subprocess com argumentos fixos, o que é seguro.
+exclude_dirs = [".venv", "tests"]

@@ -306,8 +306,37 @@
     <div class="footer"><span>Datathon MLET</span><span>12</span></div>
   </section>
 
-  <!-- 13. Arquitetura AWS -->
-  <section class="slide" data-time="3:45–4:15" data-notes="Arquitetura-alvo na AWS. Dados e artefatos no S3, treino como job batch registrando no MLflow gerenciado, a mesma imagem Docker publicada no ECR e servida em ECS Fargate atrás do API Gateway. As respostas das campanhas voltam por SQS para atualizar as Betas e publicar um novo policy.json. CloudWatch monitora conversão por canal e drift.">
+  <!-- 13. CI -->
+  <section class="slide" data-time="3:45–4:00" data-notes="Esteira de CI no GitHub Actions. Todo pull request para a main dispara dois jobs em uma máquina Linux limpa: os 66 testes com pytest, incluindo a execução dos dois notebooks, e o build da imagem Docker com o smoke test da API. Se algo falhar o PR fica vermelho. No PR que criou a esteira os dois jobs passaram e o merge foi feito na main.">
+    <div class="kicker">8 · MLOps</div>
+    <h2 style="margin-bottom:22px">Esteira de CI com GitHub Actions</h2>
+    <div class="flow">
+      <div class="step"><h3>1. Pull request</h3><p>PR para a <code>main</code> (ou push nela) dispara o workflow</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><h3>2. Ambiente limpo</h3><p>Máquina Linux nova, Python 3.13 e dependências instaladas do zero</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><h3>3. Dois jobs em paralelo</h3><p><b>pytest</b> com os 66 testes e notebooks · <b>Docker</b> build e smoke test da API</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><h3>4. Check no PR</h3><p>Verde libera o merge; vermelho mostra o log do passo que falhou</p></div>
+    </div>
+    <div class="grid2" style="margin-top:30px; flex:none">
+<pre><span class="c"># .github/workflows/ci.yml</span>
+<span class="k">on</span>:
+  pull_request: { branches: [main] }
+  push: { branches: [main] }
+<span class="k">jobs</span>:
+  testes: <span class="s">pytest -v</span>
+  docker: <span class="s">bash scripts/docker_smoke_test.sh</span></pre>
+      <div class="card good">
+        <h3 class="good-t">Resultado</h3>
+        <p>No PR que criou a esteira, <b>os dois jobs passaram</b> e o merge foi feito na <code>main</code>. A partir daqui, toda mudança só entra depois de ser testada automaticamente.</p>
+      </div>
+    </div>
+    <div class="footer"><span>Datathon MLET</span><span>13</span></div>
+  </section>
+
+  <!-- 14. Arquitetura AWS -->
+  <section class="slide" data-time="4:00–4:20" data-notes="Arquitetura-alvo na AWS. Dados e artefatos no S3, treino como job batch registrando no MLflow gerenciado, a mesma imagem Docker publicada no ECR e servida em ECS Fargate atrás do API Gateway. As respostas das campanhas voltam por SQS para atualizar as Betas e publicar um novo policy.json. CloudWatch monitora conversão por canal e drift.">
     <div class="kicker">9 · Arquitetura-alvo na nuvem</div>
     <h2>Como iria para produção na AWS</h2>
     <div class="flow">
@@ -324,11 +353,11 @@
       <div class="arrow">→</div>
       <div class="step"><h3>CloudWatch</h3><p>Latência, conversão por canal e segmento, alarmes de drift</p></div>
     </div>
-    <div class="footer"><span>Datathon MLET</span><span>13</span></div>
+    <div class="footer"><span>Datathon MLET</span><span>14</span></div>
   </section>
 
-  <!-- 14. Conclusão -->
-  <section class="slide" data-time="4:15–5:00" data-notes="Conclusão. Pipeline completo e reproduzível: dados sem vazamento, avaliação honesta, MLflow, API em Docker, 66 testes. O bandit com esquecimento bate o A/B; o contexto ainda não compensa com esses dados. Próximos passos: prior informativo e nova rodada pré-registrada. Obrigado.">
+  <!-- 15. Conclusão -->
+  <section class="slide" data-time="4:20–5:00" data-notes="Conclusão. Pipeline completo e reproduzível: dados sem vazamento, avaliação honesta, MLflow, API em Docker, 66 testes rodando automaticamente no CI a cada pull request. O bandit com esquecimento bate o A/B; o contexto ainda não compensa com esses dados. Próximos passos: prior informativo e nova rodada pré-registrada. Obrigado.">
     <div class="kicker">10 · Conclusão</div>
     <h2>O que entregamos e o que aprendemos</h2>
     <div class="grid2">
@@ -337,7 +366,7 @@
         <ul class="bullets">
           <li>Pipeline reproduzível, sem vazamento</li>
           <li>Avaliação off-policy com critério pré-registrado</li>
-          <li>MLflow, API FastAPI em Docker, 66 testes</li>
+          <li>MLflow, API FastAPI em Docker, 66 testes no CI</li>
         </ul>
       </div>
       <div class="card">
@@ -350,7 +379,7 @@
       </div>
     </div>
     <p style="margin-top:30px" class="muted">Obrigado! Código, notebooks e README completo no repositório.</p>
-    <div class="footer"><span>Datathon MLET</span><span>14</span></div>
+    <div class="footer"><span>Datathon MLET</span><span>15</span></div>
   </section>
 
 </div>
