@@ -1,0 +1,122 @@
+# Workflow de CI (Integração Contínua) do projeto.
+#
+# A ideia aqui é simples: toda vez que alguém abrir ou atualizar um pull request
+# para a main (ou fizer push direto nela), o GitHub sobe uma máquina Linux
+# limpa, instala o projeto do zero e roda as mesmas verificações que a gente
+# roda na mão:
+#
+#   1. a suíte de testes completa (pytest), incluindo a execução dos notebooks;
+#   2. o build da imagem Docker e o smoke test da API (/health e /recommend).
+#
+# Se qualquer passo falhar, o PR fica com um X vermelho e dá para ver o log de
+# cada etapa na aba "Actions" do repositório. Se tudo passar, fica o check verde.
+#
+# Esse arquivo precisa ficar exatamente em .github/workflows/ para o GitHub
+# reconhecer. O nome do arquivo em si pode ser qualquer um.
+
+# Nome que aparece na aba "Actions" e nos checks do pull request.
+name: CI
+
+# "on" define os gatilhos (triggers), ou seja, quando o workflow roda.
+on:
+  # Roda quando um PR com destino à main é aberto, recebe um novo commit
+  # ou é reaberto.
+  pull_request:
+    branches: [main]
+
+  # Roda também quando alguém faz push direto na main (inclusive quando o
+  # merge de um PR acontece). Assim a gente sabe se a main continua saudável.
+  push:
+    branches: [main]
+
+  # Cria um botão "Run workflow" na aba Actions para rodar na mão, sem
+  # precisar fazer commit. Útil para testar o próprio workflow.
+  workflow_dispatch:
+
+# Se chegar um commit novo no mesmo PR enquanto o anterior ainda está rodando,
+# cancela a execução antiga. Não faz sentido gastar tempo testando um commit
+# que já foi substituído.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Permissões do token que o GitHub entrega para o workflow. O CI só precisa
+# ler o código, então deixo só leitura (boa prática de segurança: o mínimo
+# necessário).
+permissions:
+  contents: read
+
+# Os jobs são os blocos de trabalho. Por padrão eles rodam em paralelo, cada um
+# em uma máquina separada. Aqui são dois: testes e docker.
+jobs:
+
+  # --------------------------------------------------------------------------
+  # Job 1: testes automatizados com pytest
+  # --------------------------------------------------------------------------
+  testes:
+    name: Testes (pytest)
+
+    # Sistema da máquina virtual que o GitHub disponibiliza de graça para
+    # repositórios públicos.
+    runs-on: ubuntu-latest
+
+    # Trava de segurança: se algo travar (por exemplo um notebook preso),
+    # o job é encerrado depois de 30 minutos em vez de ficar rodando à toa.
+    timeout-minutes: 30
+
+    # Os steps (passos) rodam em sequência, um depois do outro. Se um falhar,
+    # os seguintes não rodam e o job fica vermelho.
+    steps:
+      # Baixa o código do repositório (na versão do commit que disparou o
+      # workflow) para dentro da máquina. Sem isso a máquina está vazia.
+      # O dataset e o models/policy.json estão versionados no git, então já
+      # vêm junto aqui e os testes não precisam de nada externo.
+      - name: Baixar o código do repositório
+        uses: actions/checkout@v5
+
+      # Instala o Python na versão que o pyproject.toml exige (>=3.13).
+      # O "cache: pip" guarda os pacotes baixados entre execuções, então a
+      # partir da segunda vez a instalação fica bem mais rápida. A chave do
+      # cache é o requirements.txt: se ele mudar, o cache é refeito.
+      - name: Instalar Python 3.13
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      # Instala as dependências do projeto. O requirements.txt já tem a linha
+      # "-e .", que instala o pacote datathon (a pasta src/) em modo editável,
+      # do mesmo jeito que o passo a passo do README.
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Roda a suíte inteira. O pytest já sabe onde estão os testes por causa
+      # da configuração no pyproject.toml (testpaths = ["tests"]).
+      # O tests/test_notebooks.py executa os dois notebooks do início ao fim,
+      # por isso esse passo é o mais demorado do workflow.
+      - name: Rodar os testes
+        run: pytest -v
+
+  # --------------------------------------------------------------------------
+  # Job 2: build da imagem Docker e smoke test da API
+  # --------------------------------------------------------------------------
+  docker:
+    name: Docker (build e smoke test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Baixar o código do repositório
+        uses: actions/checkout@v5
+
+      # A máquina ubuntu-latest do GitHub já vem com Docker e curl instalados,
+      # então dá para reaproveitar o mesmo script que a gente usa localmente.
+      # Ele faz o build da imagem, sobe o container, chama /health e
+      # /recommend, e testa também a troca de porta pela variável PORT.
+      # Chamo com "bash" na frente porque o arquivo não está marcado como
+      # executável no git.
+      - name: Rodar o smoke test do container
+        run: bash scripts/docker_smoke_test.sh
