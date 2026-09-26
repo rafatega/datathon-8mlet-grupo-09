@@ -13,5 +13,5 @@ def test_notebook_executes(name, tmp_path):
         [sys.executable, "-m", "jupyter", "nbconvert", "--to", "notebook", "--execute",
          "--output-dir", str(tmp_path), "--ExecutePreprocessor.timeout=600",
          str(NOTEBOOKS / name)],
-        cwd=NOTEBOOKS, capture_output=True, text=True)
+        cwd=NOTEBOOKS, capture_output=True, text=True, check=False)
     assert result.returncode == 0, result.stderr[-2000:]

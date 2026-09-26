@@ -274,14 +274,23 @@ Roda toda a suíte, incluindo a execução completa dos dois notebooks via `nbco
 
 ### Integração contínua (GitHub Actions)
 
-O repositório tem um workflow de CI em `.github/workflows/ci.yml` que roda sozinho a cada pull request para a `main`, a cada push na `main` e também sob demanda pelo botão "Run workflow" na aba Actions. Ele sobe uma máquina Linux limpa e executa dois jobs em paralelo:
+O repositório tem um workflow de CI em `.github/workflows/ci.yml` que roda sozinho a cada pull request para a `main`, a cada push na `main` e também sob demanda pelo botão "Run workflow" na aba Actions. Ele sobe uma máquina Linux limpa e executa três jobs em paralelo:
 
 | Job | O que faz |
 |---|---|
 | Testes (pytest) | Instala Python 3.13 e o `requirements.txt` do zero e roda `pytest -v`, incluindo a execução dos dois notebooks |
 | Docker (build e smoke test) | Roda `scripts/docker_smoke_test.sh`: build da imagem, sobe o container e valida `/health` e `/recommend` |
+| Qualidade (ruff e bandit) | Roda `ruff check .` (qualidade do código) e `bandit -c pyproject.toml -r .` (segurança). O Bandit lê a seção `[tool.bandit]` do `pyproject.toml`, que exclui `.venv` e `tests` para analisar só o código do projeto |
 
 Se algum job falhar, o PR fica marcado como reprovado e o log de cada passo fica disponível na aba Actions. O arquivo do workflow está todo comentado explicando cada trecho.
+
+Para rodar as mesmas verificações de qualidade localmente antes do commit (ruff e bandit já estão no `requirements.txt`):
+
+```bash
+ruff check .                     # aponta os problemas
+ruff check . --fix               # corrige automaticamente o que for possível
+bandit -c pyproject.toml -r .    # o -c é obrigatório para ler a configuração
+```
 
 ## 14. Como executar (passo a passo)
 
@@ -345,7 +354,7 @@ docker run -p 8000:8000 datathon-bandit-api
 
 ```
 README.md  requirements.txt  requirements-api.txt  Dockerfile  .dockerignore  .gitignore  pyproject.toml
-.github/workflows/ci.yml         # CI: pytest + smoke test do Docker a cada PR
+.github/workflows/ci.yml         # CI: pytest, smoke test do Docker, ruff e bandit a cada PR
 doc/                             # enunciado do desafio (PDF) e prompt.txt
   POSTECH - MLET - DATATHON.pdf
   prompt.txt
