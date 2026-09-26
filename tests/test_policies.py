@@ -1,8 +1,12 @@
 import numpy as np
 import pytest
 
-from datathon.policies import (AlternatingAB, DiscountedEpsilonGreedy,
-                               DiscountedThompsonSampling, FixedArm)
+from datathon.policies import (
+    AlternatingAB,
+    DiscountedEpsilonGreedy,
+    DiscountedThompsonSampling,
+    FixedArm,
+)
 
 
 def _simulate(policy, rates_by_phase, n_per_phase, seed=0):

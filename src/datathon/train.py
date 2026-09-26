@@ -3,24 +3,42 @@ import argparse
 import json
 import math
 from dataclasses import dataclass, replace
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
-from datathon.data import (PROJECT_ROOT, RAW_PATH, block_arm_rates, clean,  # noqa: E402
-                           dataset_sha256, evaluation_set, load_raw)
-from datathon.evaluation import (ReplayResult, best_arm_share, block_sums,  # noqa: E402
-                                 bootstrap_diff_ci, effective_sample_size, pseudo_regret,
-                                 replay, snips)
-from datathon.features import ARMS, SEGMENTS  # noqa: E402
-from datathon.policies import (AlternatingAB, DiscountedEpsilonGreedy,  # noqa: E402
-                               DiscountedThompsonSampling, FixedArm)
+from datathon.data import (
+    PROJECT_ROOT,
+    RAW_PATH,
+    block_arm_rates,
+    clean,
+    dataset_sha256,
+    evaluation_set,
+    load_raw,
+)
+from datathon.evaluation import (
+    ReplayResult,
+    best_arm_share,
+    block_sums,
+    bootstrap_diff_ci,
+    effective_sample_size,
+    pseudo_regret,
+    replay,
+    snips,
+)
+from datathon.features import ARMS, SEGMENTS
+from datathon.policies import (
+    AlternatingAB,
+    DiscountedEpsilonGreedy,
+    DiscountedThompsonSampling,
+    FixedArm,
+)
 
 GAMMAS = (1.0, 0.999, 0.995, 0.99)
 EPSILONS = (0.05, 0.1, 0.2)
@@ -144,7 +162,7 @@ def build_policy_artifact(df: pd.DataFrame, gamma: float, sha: str) -> dict:
                          for j, arm in enumerate(ARMS)}
     return {"algorithm": "discounted_thompson_sampling", "gamma": gamma,
             "prior": {"alpha": 1.0, "beta": 1.0}, "arms": list(ARMS), "segments": segments,
-            "dataset_sha256": sha, "trained_at": datetime.now(timezone.utc).isoformat()}
+            "dataset_sha256": sha, "trained_at": datetime.now(UTC).isoformat()}
 
 
 def save_figures(summaries: dict, regret_curves: dict, best_curves: dict, outdir: Path) -> list[Path]:

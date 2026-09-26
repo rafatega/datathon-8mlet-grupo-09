@@ -1,8 +1,15 @@
 import numpy as np
 import pytest
 
-from datathon.evaluation import (best_arm_share, block_sums, bootstrap_diff_ci,
-                                 effective_sample_size, pseudo_regret, replay, snips)
+from datathon.evaluation import (
+    best_arm_share,
+    block_sums,
+    bootstrap_diff_ci,
+    effective_sample_size,
+    pseudo_regret,
+    replay,
+    snips,
+)
 from datathon.policies import AlternatingAB, FixedArm, Policy
 
 

@@ -2,8 +2,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from datathon.data import (LEAKAGE_COLUMNS, block_arm_rates, clean, dataset_sha256,
-                           evaluation_set, load_raw)
+from datathon.data import (
+    LEAKAGE_COLUMNS,
+    block_arm_rates,
+    clean,
+    dataset_sha256,
+    evaluation_set,
+    load_raw,
+)
 
 
 def _raw(rows):
