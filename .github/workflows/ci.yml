@@ -6,7 +6,8 @@
 # roda na mão:
 #
 #   1. a suíte de testes completa (pytest), incluindo a execução dos notebooks;
-#   2. o build da imagem Docker e o smoke test da API (/health e /recommend).
+#   2. o build da imagem Docker e o smoke test da API (/health e /recommend);
+#   3. a análise estática do código: Ruff (qualidade) e Bandit (segurança).
 #
 # Se qualquer passo falhar, o PR fica com um X vermelho e dá para ver o log de
 # cada etapa na aba "Actions" do repositório. Se tudo passar, fica o check verde.
@@ -47,7 +48,7 @@ permissions:
   contents: read
 
 # Os jobs são os blocos de trabalho. Por padrão eles rodam em paralelo, cada um
-# em uma máquina separada. Aqui são dois: testes e docker.
+# em uma máquina separada. Aqui são três: testes, docker e qualidade.
 jobs:
 
   # --------------------------------------------------------------------------
@@ -120,3 +121,49 @@ jobs:
       # executável no git.
       - name: Rodar o smoke test do container
         run: bash scripts/docker_smoke_test.sh
+
+  # --------------------------------------------------------------------------
+  # Job 3: análise estática com Ruff (qualidade) e Bandit (segurança)
+  # --------------------------------------------------------------------------
+  # "Análise estática" quer dizer que as ferramentas só leem o código, sem
+  # executar nada. Por isso esse job é bem rápido (poucos segundos).
+  qualidade:
+    name: Qualidade (ruff e bandit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Baixar o código do repositório
+        uses: actions/checkout@v5
+
+      - name: Instalar Python 3.13
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      # Aqui não preciso do projeto inteiro (numpy, mlflow, jupyter...), só das
+      # duas ferramentas. O grep pega do requirements.txt apenas as linhas do
+      # ruff e do bandit, então a versão usada no CI é sempre a mesma que está
+      # fixada no arquivo. Se um dia a gente atualizar a versão lá, o CI
+      # acompanha sem precisar mexer aqui.
+      - name: Instalar ruff e bandit
+        run: |
+          python -m pip install --upgrade pip
+          pip install $(grep -E '^(ruff|bandit)==' requirements.txt)
+
+      # Ruff como linter: procura problemas como import sem uso, variável que
+      # nunca é lida e imports fora de ordem. O "." analisa o projeto todo,
+      # inclusive os notebooks. A pasta .venv o Ruff já ignora sozinho.
+      # A opção --output-format=github faz os avisos aparecerem direto nas
+      # linhas do código, na aba "Files changed" do PR.
+      # Para corrigir na sua máquina: ruff check . --fix
+      - name: Ruff (lint)
+        run: ruff check . --output-format=github
+
+      # Bandit: procura padrões inseguros no código (senha no código, eval,
+      # subprocess com shell=True, etc.).
+      # O "-c pyproject.toml" é obrigatório: é ele que faz o Bandit ler a seção
+      # [tool.bandit] do pyproject, que exclui a .venv e a pasta tests. Sem ele,
+      # o Bandit analisaria as bibliotecas instaladas também.
+      - name: Bandit (segurança)
+        run: bandit -c pyproject.toml -r .

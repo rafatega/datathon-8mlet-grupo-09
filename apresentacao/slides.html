@@ -307,7 +307,7 @@
   </section>
 
   <!-- 13. CI -->
-  <section class="slide" data-time="3:45–4:00" data-notes="Esteira de CI no GitHub Actions. Todo pull request para a main dispara dois jobs em uma máquina Linux limpa: os 66 testes com pytest, incluindo a execução dos dois notebooks, e o build da imagem Docker com o smoke test da API. Se algo falhar o PR fica vermelho. No PR que criou a esteira os dois jobs passaram e o merge foi feito na main.">
+  <section class="slide" data-time="3:45–4:00" data-notes="Esteira de CI no GitHub Actions. Todo pull request para a main dispara três jobs em uma máquina Linux limpa: os 66 testes com pytest, incluindo a execução dos dois notebooks, o build da imagem Docker com o smoke test da API e a análise estática com Ruff, para qualidade, e Bandit, para segurança. Se algo falhar o PR fica vermelho. No PR que criou a esteira os dois jobs passaram e o merge foi feito na main.">
     <div class="kicker">8 · MLOps</div>
     <h2 style="margin-bottom:22px">Esteira de CI com GitHub Actions</h2>
     <div class="flow">
@@ -315,7 +315,7 @@
       <div class="arrow">→</div>
       <div class="step"><h3>2. Ambiente limpo</h3><p>Máquina Linux nova, Python 3.13 e dependências instaladas do zero</p></div>
       <div class="arrow">→</div>
-      <div class="step"><h3>3. Dois jobs em paralelo</h3><p><b>pytest</b> com os 66 testes e notebooks · <b>Docker</b> build e smoke test da API</p></div>
+      <div class="step"><h3>3. Três jobs em paralelo</h3><p><b>pytest</b> com os 66 testes · <b>Docker</b> e smoke test da API · <b>Ruff</b> e <b>Bandit</b></p></div>
       <div class="arrow">→</div>
       <div class="step"><h3>4. Check no PR</h3><p>Verde libera o merge; vermelho mostra o log do passo que falhou</p></div>
     </div>
@@ -326,7 +326,8 @@
   push: { branches: [main] }
 <span class="k">jobs</span>:
   testes: <span class="s">pytest -v</span>
-  docker: <span class="s">bash scripts/docker_smoke_test.sh</span></pre>
+  docker: <span class="s">bash scripts/docker_smoke_test.sh</span>
+  qualidade: <span class="s">ruff check . &amp;&amp; bandit -c pyproject.toml -r .</span></pre>
       <div class="card good">
         <h3 class="good-t">Resultado</h3>
         <p>No PR que criou a esteira, <b>os dois jobs passaram</b> e o merge foi feito na <code>main</code>. A partir daqui, toda mudança só entra depois de ser testada automaticamente.</p>

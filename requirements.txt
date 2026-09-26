@@ -1,3 +1,4 @@
+bandit==1.9.4
 fastapi==0.141.1
 httpx==0.28.1
 ipykernel==7.3.0
@@ -10,6 +11,7 @@ numpy==2.5.3
 pandas==3.0.6
 pydantic==2.13.5
 pytest==9.1.1
+ruff==0.16.9
 seaborn==0.13.2
 uvicorn==0.53.0
 -e .
