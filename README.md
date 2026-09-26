@@ -6,24 +6,30 @@
 
 ## Sumário
 
-1. [Problema de negócio](#1-problema-de-negócio)
-2. [Dataset](#2-dataset)
-3. [Governança e LGPD](#3-governança-e-lgpd)
-4. [EDA](#4-eda)
-5. [Metodologia](#5-metodologia)
-6. [Resultados](#6-resultados)
-7. [Golden Set](#7-golden-set)
-8. [Arquitetura local](#8-arquitetura-local)
-9. [Arquitetura-alvo na nuvem (AWS)](#9-arquitetura-alvo-na-nuvem-aws)
-10. [MLflow](#10-mlflow)
-11. [API](#11-api)
-12. [Docker](#12-docker)
-13. [Testes](#13-testes)
-14. [Como executar (passo a passo)](#14-como-executar-passo-a-passo)
-15. [Estrutura do repositório](#15-estrutura-do-repositório)
-16. [Roteiro do vídeo (até 5 min)](#16-roteiro-do-vídeo-até-5-min)
-17. [Limitações](#17-limitações)
-18. [Checklist de entrega](#18-checklist-de-entrega)
+- [Datathon MLET — Bandit contextual para escolha de canal de contato](#datathon-mlet--bandit-contextual-para-escolha-de-canal-de-contato)
+  - [Sumário](#sumário)
+  - [1. Problema de negócio](#1-problema-de-negócio)
+  - [2. Dataset](#2-dataset)
+    - [Colunas e leakage](#colunas-e-leakage)
+    - [Limitações do dataset](#limitações-do-dataset)
+  - [3. Governança e LGPD](#3-governança-e-lgpd)
+  - [4. EDA](#4-eda)
+  - [5. Metodologia](#5-metodologia)
+  - [6. Resultados](#6-resultados)
+    - [Interpretação honesta](#interpretação-honesta)
+  - [7. Golden Set](#7-golden-set)
+  - [8. Arquitetura local](#8-arquitetura-local)
+    - [Decisões de componentes (ADR resumido)](#decisões-de-componentes-adr-resumido)
+  - [9. Arquitetura-alvo na nuvem (AWS)](#9-arquitetura-alvo-na-nuvem-aws)
+  - [10. MLflow](#10-mlflow)
+  - [11. API](#11-api)
+  - [12. Docker](#12-docker)
+  - [13. Testes](#13-testes)
+  - [14. Como executar (passo a passo)](#14-como-executar-passo-a-passo)
+  - [15. Estrutura do repositório](#15-estrutura-do-repositório)
+  - [16. Roteiro do vídeo (até 5 min)](#16-roteiro-do-vídeo-até-5-min)
+  - [17. Limitações](#17-limitações)
+  - [18. Checklist de entrega](#18-checklist-de-entrega)
 
 ---
 
@@ -402,5 +408,5 @@ tests/
 | Governança / LGPD | ✅ |
 | Arquitetura local (ADR) e arquitetura-alvo AWS | ✅ |
 | Print da UI do MLflow em `reports/figures/mlflow_ui.png` | ✅ |
-| Repositório público `datathon-7mlet-grupo-XX` | ⬜ **usuário** |
-| Gravação e upload do vídeo (≤5 min) | ⬜ **usuário** |
+| Repositório público `datathon-7mlet-grupo-XX` | ✅ |
+| Gravação e upload do vídeo (≤5 min) | ✅ |
