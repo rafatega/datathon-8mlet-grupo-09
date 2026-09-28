@@ -1,0 +1,59 @@
+# Regras de alerta do Prometheus.
+#
+# Cada regra tem uma condição escrita em PromQL (a linguagem de consulta do
+# Prometheus). Quando a condição fica verdadeira, o alerta passa por três estados
+# que dá para ver na aba "Alerts" da interface (http://localhost:9090/alerts):
+#
+#   inactive -> a condição é falsa, está tudo normal;
+#   pending  -> a condição ficou verdadeira, mas ainda não pelo tempo do "for";
+#   firing   -> a condição continuou verdadeira pelo tempo todo do "for".
+#
+# O "for" evita alarme falso por causa de um pico de um segundo.
+#
+# Aqui os alertas só aparecem na interface do Prometheus. Para mandar e-mail ou
+# mensagem seria preciso mais um componente (Alertmanager), que ficou fora por
+# ser uma demonstração local. Na AWS esse papel seria do SNS (ver README).
+
+groups:
+  - name: api-recomendacao
+    rules:
+
+      # A API parou de responder. A métrica "up" é criada pelo próprio
+      # Prometheus: vale 1 quando ele consegue ler o /metrics e 0 quando não.
+      - alert: ApiForaDoAr
+        expr: up{job="api"} == 0
+        for: 10s
+        labels:
+          severidade: critica
+        annotations:
+          resumo: "A API de recomendação não está respondendo"
+          descricao: "O Prometheus não consegue ler o /metrics da API há mais de 10 segundos."
+
+      # Mais de 5% das requisições do último minuto terminaram em erro do
+      # servidor (status 5xx, por exemplo 503 quando o modelo não carrega).
+      # Erros de validação (422) são erro de quem chamou, por isso ficam de fora.
+      - alert: TaxaDeErrosAlta
+        expr: |
+          sum(rate(api_requisicoes_total{status=~"5.."}[1m]))
+            / sum(rate(api_requisicoes_total[1m])) > 0.05
+        for: 30s
+        labels:
+          severidade: critica
+        annotations:
+          resumo: "Muitas requisições com erro na API"
+          descricao: "Mais de 5% das requisições do último minuto retornaram status 5xx."
+
+      # Mais de 30% das recomendações dos últimos 2 minutos foram de baixa
+      # confiança (0,05 < P(celular melhor) < 0,95, o mesmo critério do Golden
+      # Set). Isso indica que o público mudou para segmentos em que o modelo tem
+      # pouca certeza, e esses casos deveriam passar por revisão humana.
+      - alert: MuitasRecomendacoesIncertas
+        expr: |
+          sum(rate(recomendacoes_incertas_total[2m]))
+            / sum(rate(recomendacoes_total[2m])) > 0.3
+        for: 30s
+        labels:
+          severidade: aviso
+        annotations:
+          resumo: "Muitas recomendações de baixa confiança"
+          descricao: "Mais de 30% das recomendações dos últimos 2 minutos ficaram com P(celular melhor) entre 0,05 e 0,95."

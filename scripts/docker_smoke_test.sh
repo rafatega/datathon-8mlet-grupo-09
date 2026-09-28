@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build da imagem, sobe o container e valida /health e /recommend (inclusive PORT via env).
+# Build da imagem, sobe o container e valida /health, /recommend e /metrics (inclusive PORT via env).
 set -euo pipefail
 
 IMAGE=datathon-bandit-api
@@ -17,6 +17,11 @@ check() {
   curl -sf -X POST "http://localhost:${port}/recommend" \
     -H "Content-Type: application/json" \
     -d '{"age": 25, "poutcome": "nonexistent"}'; echo
+  # A recomendação acima precisa aparecer no contador lido pelo Prometheus.
+  local metrics
+  metrics=$(curl -sf "http://localhost:${port}/metrics")
+  grep -q '^recomendacoes_total{canal="cellular",segmento="jovem_sem_sucesso"} 1.0$' <<< "$metrics"
+  echo "/metrics ok"
 }
 
 CID=$(docker run -d -p "${HOST_PORT}:8000" "$IMAGE")

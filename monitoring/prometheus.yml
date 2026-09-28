@@ -1,0 +1,29 @@
+# Configuração do Prometheus (monitoramento local da API).
+#
+# O Prometheus funciona "puxando" as métricas: de tempos em tempos ele visita o
+# endereço /metrics da API, lê os contadores e guarda o histórico. Com esse
+# histórico ele monta gráficos e avalia as regras de alerta.
+#
+# Esse arquivo é usado pelo docker-compose.yml, que monta a pasta monitoring/
+# dentro do container do Prometheus em /etc/prometheus/.
+
+global:
+  # De quanto em quanto tempo o Prometheus lê o /metrics da API.
+  # Numa produção de verdade 15s ou 30s é o mais comum; aqui deixei 5s para a
+  # demonstração reagir rápido.
+  scrape_interval: 5s
+  # De quanto em quanto tempo as regras de alerta são reavaliadas.
+  evaluation_interval: 5s
+
+# Arquivo com as regras de alerta (caminho relativo a este arquivo).
+rule_files:
+  - alertas.yml
+
+# "Alvos" que o Prometheus vai monitorar.
+scrape_configs:
+  - job_name: api
+    # Dentro da rede do docker compose, cada serviço é encontrado pelo nome.
+    # "api" é o nome do serviço da API no docker-compose.yml.
+    # O caminho padrão lido é /metrics, que é o endpoint que a API expõe.
+    static_configs:
+      - targets: ["api:8000"]
