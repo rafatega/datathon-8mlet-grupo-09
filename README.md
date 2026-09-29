@@ -24,6 +24,7 @@
   - [10. MLflow](#10-mlflow)
   - [11. API](#11-api)
   - [12. Docker](#12-docker)
+    - [Monitoramento com Prometheus](#monitoramento-com-prometheus)
   - [13. Testes](#13-testes)
     - [Integração contínua (GitHub Actions)](#integração-contínua-github-actions)
   - [14. Como executar (passo a passo)](#14-como-executar-passo-a-passo)
@@ -163,6 +164,7 @@ data/raw/*.csv → data.py (limpeza, duplicatas, leakage, blocos)
                           + reports/metrics.json + reports/figures/*.png
                           + models/policy.json
               → api.py (FastAPI carrega policy.json e usa segment_of) → Docker
+                          → /metrics → Prometheus local (docker compose, alertas)
 ```
 
 ### Decisões de componentes (ADR resumido)
@@ -175,14 +177,24 @@ data/raw/*.csv → data.py (limpeza, duplicatas, leakage, blocos)
 | API | FastAPI | Exigida (etapa de serving) | Mesma stack, hospedada em ECS Fargate / Lambda + API Gateway |
 | Empacotamento | Docker (só da API) | Reprodutibilidade do serving | Imagem publicada no ECR |
 | Deploy real / Vercel | **Não** | Fora do escopo do desafio (o enunciado não exige deploy) e o serving já foi validado localmente via Docker (§12); tecnicamente, a Vercel roda Python apenas como funções serverless (`api/*.py`), sem executar a imagem Docker diretamente, o que exigiria adaptar o `api.py` a esse modelo de execução | Descrito no parágrafo AWS (§9) |
-| CI/CD | **Não** | Fora do escopo | GitHub Actions rodando `pytest` + build da imagem |
-| Monitoramento | Apenas documentado | Fora do escopo | CloudWatch: conversão por braço, drift de segmento, alarmes de queda de conversão |
+| CI/CD | CI no GitHub Actions; CD **não** | O CI roda testes, smoke test do Docker, Ruff e Bandit a cada PR (§13). Publicação automática de versões ficou fora do escopo | Publicar a imagem versionada no ECR e atualizar o serviço no ECS |
+| Monitoramento | Prometheus local (`docker compose`) | Métricas técnicas e de negócio da API e alertas, demonstráveis localmente com a mesma lógica da nuvem (§12) | Amazon Managed Service for Prometheus + Managed Grafana, ou CloudWatch com alarmes no SNS (§9) |
 
 ## 9. Arquitetura-alvo na nuvem (AWS)
 
 Em produção, os dados brutos e os artefatos (`policy.json`, `metrics.json`, figuras) ficariam em **S3**. O treino/avaliação rodaria como um job batch (SageMaker Processing ou uma task ECS agendada), registrando params, métricas e artefatos em um **MLflow gerenciado** (ou SageMaker Experiments), com o `policy.json` resultante publicado de volta no S3. A API FastAPI seria empacotada na mesma imagem Docker validada localmente, publicada no **ECR** e servida por **ECS Fargate** atrás de um **API Gateway** ou Application Load Balancer, escalando horizontalmente conforme o volume de campanhas.
 
 Para o modelo continuar aprendendo em produção, as respostas reais das campanhas (o cliente converteu ou não, depois de contatado pelo canal recomendado) retornariam por uma fila (**SQS**) para um processo que atualiza periodicamente as posteriores Beta e republica um novo `policy.json` — o mesmo padrão de "warm start determinístico sobre o log completo" já usado localmente (`build_policy_artifact` em `train.py`), apenas rodando com cadência regular em vez de manualmente. **CloudWatch** cobriria métricas operacionais e de negócio (latência da API, conversão por braço e por segmento, alarmes de queda de conversão ou de drift de segmento).
+
+O monitoramento já existe localmente com Prometheus ([§12](#monitoramento-com-prometheus)) e foi desenhado para migrar sem reescrever a API: o `/metrics` e as regras de alerta seguem o padrão Prometheus, que a AWS aceita diretamente.
+
+| Local (implementado) | Na AWS |
+|---|---|
+| `GET /metrics` na API | O mesmo endpoint, lido por um coletor ADOT (AWS Distro for OpenTelemetry) rodando ao lado da API no ECS |
+| Prometheus no `docker compose` | **Amazon Managed Service for Prometheus**, ou **CloudWatch** recebendo as mesmas métricas pelo coletor |
+| `monitoring/alertas.yml` | As mesmas regras carregadas no Amazon Managed Service for Prometheus, ou recriadas como **CloudWatch Alarms** |
+| Aba Alerts da interface do Prometheus | Notificação por **SNS** (e-mail, SMS, Slack) |
+| Consultas na aba Query | Painéis no **Amazon Managed Grafana** ou em dashboards do CloudWatch |
 
 ## 10. MLflow
 
@@ -212,6 +224,7 @@ Como `mlruns/` não é versionado, a **evidência reprodutível e versionada dos
 ## 11. API
 
 - `GET /health` → `{"status": "ok"}` (503 se o modelo não carregar).
+- `GET /metrics` → métricas no formato do Prometheus (requisições, latência, recomendações por canal e segmento, recomendações de baixa confiança). Ver [Monitoramento com Prometheus](#monitoramento-com-prometheus).
 - `POST /recommend`:
   - **Entrada:** `age` (inteiro, 18–100), `poutcome` (`success` | `failure` | `nonexistent`), `mode` (`explotacao` padrão | `thompson`), `seed` opcional. Campos extras são ignorados; entrada inválida retorna **HTTP 422**.
   - **Saída:** `segment` (segmento calculado), `recommended_channel`, `estimated_conversion_rate` (média da posterior por canal — taxa histórica **com esquecimento** `γ=0,99`, ponderada para os últimos ~100 eventos de cada segmento, que no dataset de treino caem no regime de 2010 com conversão 45–57%; não é um efeito causal, ver §7), `prob_cellular_better` (P(celular > telefone) na posterior), `mode`.
@@ -251,13 +264,54 @@ Smoke test automatizado (build → run → `curl /health` e `/recommend`, inclus
 bash scripts/docker_smoke_test.sh
 ```
 
+O smoke test também confere se a recomendação feita aparece no `/metrics`.
+
+### Monitoramento com Prometheus
+
+A API expõe métricas no formato do Prometheus em `GET /metrics`, e o `docker-compose.yml` sobe a API junto com um **Prometheus** local que coleta essas métricas a cada 5 segundos e avalia regras de alerta. É a versão local do monitoramento que, na nuvem, ficaria com os serviços da AWS descritos no [§9](#9-arquitetura-alvo-na-nuvem-aws).
+
+```bash
+docker compose up --build
+# API:        http://localhost:8000/docs   (métricas em http://localhost:8000/metrics)
+# Prometheus: http://localhost:9090        (alertas em http://localhost:9090/alerts)
+docker compose down
+```
+
+**Métricas expostas** (definidas em `src/datathon/api.py`):
+
+| Métrica | Tipo | O que mede |
+|---|---|---|
+| `api_requisicoes_total{metodo, rota, status}` | Técnica | Requisições por endpoint e status (200, 422, 503...). A rota usa o molde (`/recommend`), e caminhos inexistentes ficam em `desconhecida` |
+| `api_latencia_segundos{rota}` | Técnica | Histograma do tempo de resposta |
+| `recomendacoes_total{canal, segmento}` | Negócio | Quantas recomendações foram para celular e para telefone, por segmento |
+| `recomendacoes_incertas_total{segmento}` | Negócio | Recomendações de baixa confiança, com o mesmo critério do Golden Set (0,05 < P(celular melhor) < 0,95, ver [§7](#7-golden-set)): casos candidatos a revisão humana |
+
+**Regras de alerta** (`monitoring/alertas.yml`):
+
+| Alerta | Condição | Espera (`for`) |
+|---|---|---|
+| `ApiForaDoAr` | O Prometheus não consegue ler o `/metrics` da API (`up == 0`) | 10 s |
+| `TaxaDeErrosAlta` | Mais de 5% das requisições do último minuto com status 5xx | 30 s |
+| `MuitasRecomendacoesIncertas` | Mais de 30% das recomendações dos últimos 2 minutos com baixa confiança, sinal de que o público mudou para segmentos em que o modelo tem pouca certeza | 30 s |
+
+Os alertas aparecem na aba Alerts do Prometheus passando de `inactive` para `pending` e depois `firing`. O envio de notificação (e-mail, Slack) exigiria o Alertmanager e ficou fora do escopo local.
+
+**Roteiro de demonstração.** Os alertas medem taxas (o que está acontecendo agora), então a demo precisa de tráfego contínuo, gerado por `scripts/gerar_trafego.py` (só biblioteca padrão do Python):
+
+1. `docker compose up --build` e abrir `http://localhost:9090/alerts`.
+2. `python scripts/gerar_trafego.py --perfil normal`: público parecido com a base real (cerca de 10% de casos incertos). Nenhum alerta dispara, e a consulta `sum by (canal) (rate(recomendacoes_total[1m]))` na aba Query mostra a divisão entre celular e telefone.
+3. `python scripts/gerar_trafego.py --perfil incerto`: o público muda para segmentos incertos (80%). Em cerca de 1 minuto `MuitasRecomendacoesIncertas` vai para `pending` e depois `firing`.
+4. `docker compose stop api`: em cerca de 20 segundos `ApiForaDoAr` dispara. `docker compose start api` e o alerta volta ao normal.
+
+Roteiro verificado neste ambiente com Docker Desktop. A configuração do Prometheus também é validada no CI com o `promtool`.
+
 ## 13. Testes
 
 ```bash
 pytest -v
 ```
 
-Roda toda a suíte, incluindo a execução completa dos dois notebooks via `nbconvert` (`test_notebooks.py`) — pode levar de alguns segundos a poucos minutos dependendo do ambiente. Execução verificada neste repositório: **66 testes, todos passando**.
+Roda toda a suíte, incluindo a execução completa dos dois notebooks via `nbconvert` (`test_notebooks.py`) — pode levar de alguns segundos a poucos minutos dependendo do ambiente. Execução verificada neste repositório: **71 testes, todos passando**.
 
 | Arquivo | Cobertura |
 |---|---|
@@ -267,7 +321,7 @@ Roda toda a suíte, incluindo a execução completa dos dois notebooks via `nbco
 | `tests/test_evaluation.py` | Replay não embaralha e descarta eventos sem `match`; SNIPS recupera a conversão verdadeira sob propensão conhecida; A/B determinístico alterna; pseudo-regret e % melhor braço conferem com exemplo manual; bootstrap de IC detecta diferença clara |
 | `tests/test_train.py` | `policy.json` segue o schema, é determinístico e contém o hash do dataset; resumo usa só eventos de teste |
 | `tests/test_model.py` | Taxas estimadas e recomendação por explotação; `prob_cellular_better` determinístico; modo `thompson` reprodutível por seed; validação de schema (braços/segmentos ausentes); consistência com o Golden Set |
-| `tests/test_api.py` | `/health`; `/recommend` válido; 422 para entrada inválida; campos extras ignorados; API usa a mesma `segment_of` do treino; 503 sem modelo |
+| `tests/test_api.py` | `/health`; `/recommend` válido; 422 para entrada inválida; campos extras ignorados; API usa a mesma `segment_of` do treino; 503 sem modelo; `/metrics` no formato do Prometheus; contadores por canal, segmento, status e baixa confiança; rota usa o molde e `/metrics` não conta a si mesmo |
 | `tests/test_golden_set.py` | Os 5 clientes do Golden Set recebem a recomendação esperada (ou incerteza esperada, no caso 5) |
 | `tests/test_notebooks.py` | Os dois notebooks executam do início ao fim sem erro (`nbconvert`) |
 | `tests/test_smoke.py` | Pacote `datathon` importável; dado bruto presente no repositório |
@@ -354,6 +408,10 @@ docker run -p 8000:8000 datathon-bandit-api
 
 ```
 README.md  requirements.txt  requirements-api.txt  Dockerfile  .dockerignore  .gitignore  pyproject.toml
+docker-compose.yml               # API + Prometheus para o monitoramento local
+monitoring/
+  prometheus.yml   # coleta do /metrics da API
+  alertas.yml      # regras de alerta
 .github/workflows/ci.yml         # CI: pytest, smoke test do Docker, ruff e bandit a cada PR
 doc/                             # enunciado do desafio (PDF) e prompt.txt
   POSTECH - MLET - DATATHON.pdf
@@ -384,6 +442,7 @@ reports/
     escolha_melhor_braco.png
     mlflow_ui.png    # print da UI do MLflow (23 runs)
 scripts/docker_smoke_test.sh
+scripts/gerar_trafego.py   # tráfego contínuo para a demo do monitoramento
 tests/
   test_data.py  test_features.py  test_policies.py  test_evaluation.py
   test_train.py  test_model.py  test_api.py  test_golden_set.py
@@ -424,7 +483,7 @@ tests/
 | `reports/metrics.json` como evidência versionada | ✅ |
 | API FastAPI (`/health`, `/recommend`) | ✅ |
 | Docker + smoke test validado | ✅ |
-| Testes automatizados (`pytest -v`, 66 passando) | ✅ |
+| Testes automatizados (`pytest -v`, 71 passando) | ✅ |
 | README consolidando toda a documentação | ✅ |
 | Golden Set (5 clientes) | ✅ |
 | Governança / LGPD | ✅ |

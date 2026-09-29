@@ -1,0 +1,29 @@
+# Sobe a API e o Prometheus juntos, com um único comando:
+#
+#   docker compose up --build
+#
+# API:        http://localhost:8000/docs     (métricas em http://localhost:8000/metrics)
+# Prometheus: http://localhost:9090          (alertas em http://localhost:9090/alerts)
+#
+# Para desligar tudo: docker compose down
+
+services:
+
+  # A mesma imagem da API usada no Dockerfile e no smoke test.
+  api:
+    build: .
+    image: datathon-bandit-api
+    ports:
+      - "8000:8000"
+
+  # Prometheus oficial, com a versão fixa para não mudar sozinho.
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    ports:
+      - "9090:9090"
+    # Monta a pasta monitoring/ (prometheus.yml e alertas.yml) dentro do
+    # container, só para leitura (:ro).
+    volumes:
+      - ./monitoring:/etc/prometheus:ro
+    depends_on:
+      - api

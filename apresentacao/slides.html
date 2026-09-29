@@ -295,7 +295,7 @@
   </section>
 
   <!-- 12. MLflow -->
-  <section class="slide" data-time="3:25–3:45" data-notes="MLflow local. Experimento datathon-bandit-canal com 23 runs: 16 de validação (escolha de gama e epsilon) e 7 de teste, com parâmetros, métricas e artefatos. Se quiser, minimize e mostre o mlflow ui rodando.">
+  <section class="slide" data-time="3:25–3:40" data-notes="MLflow local. Experimento datathon-bandit-canal com 23 runs: 16 de validação (escolha de gama e epsilon) e 7 de teste, com parâmetros, métricas e artefatos. Se quiser, minimize e mostre o mlflow ui rodando.">
     <div class="kicker">8 · MLOps</div>
     <h2 style="margin-bottom:18px">MLflow: 23 runs registrados</h2>
     <div class="figure">
@@ -307,7 +307,7 @@
   </section>
 
   <!-- 13. CI -->
-  <section class="slide" data-time="3:45–4:00" data-notes="Esteira de CI no GitHub Actions. Todo pull request para a main dispara três jobs em uma máquina Linux limpa: os 66 testes com pytest, incluindo a execução dos dois notebooks, o build da imagem Docker com o smoke test da API e a análise estática com Ruff, para qualidade, e Bandit, para segurança. Se algo falhar o PR fica vermelho. No PR que criou a esteira os dois jobs passaram e o merge foi feito na main.">
+  <section class="slide" data-time="3:40–3:55" data-notes="Esteira de CI no GitHub Actions. Todo pull request para a main dispara três jobs em uma máquina Linux limpa: os 71 testes com pytest, incluindo a execução dos dois notebooks, o build da imagem Docker com o smoke test da API e a análise estática com Ruff, para qualidade, e Bandit, para segurança. Se algo falhar o PR fica vermelho. No PR que criou a esteira os dois jobs passaram e o merge foi feito na main.">
     <div class="kicker">8 · MLOps</div>
     <h2 style="margin-bottom:22px">Esteira de CI com GitHub Actions</h2>
     <div class="flow">
@@ -315,7 +315,7 @@
       <div class="arrow">→</div>
       <div class="step"><h3>2. Ambiente limpo</h3><p>Máquina Linux nova, Python 3.13 e dependências instaladas do zero</p></div>
       <div class="arrow">→</div>
-      <div class="step"><h3>3. Três jobs em paralelo</h3><p><b>pytest</b> com os 66 testes · <b>Docker</b> e smoke test da API · <b>Ruff</b> e <b>Bandit</b></p></div>
+      <div class="step"><h3>3. Três jobs em paralelo</h3><p><b>pytest</b> com os 71 testes · <b>Docker</b> e smoke test da API · <b>Ruff</b> e <b>Bandit</b></p></div>
       <div class="arrow">→</div>
       <div class="step"><h3>4. Check no PR</h3><p>Verde libera o merge; vermelho mostra o log do passo que falhou</p></div>
     </div>
@@ -336,8 +336,41 @@
     <div class="footer"><span>Datathon MLET</span><span>13</span></div>
   </section>
 
-  <!-- 14. Arquitetura AWS -->
-  <section class="slide" data-time="4:00–4:20" data-notes="Arquitetura-alvo na AWS. Dados e artefatos no S3, treino como job batch registrando no MLflow gerenciado, a mesma imagem Docker publicada no ECR e servida em ECS Fargate atrás do API Gateway. As respostas das campanhas voltam por SQS para atualizar as Betas e publicar um novo policy.json. CloudWatch monitora conversão por canal e drift.">
+  <!-- 14. Monitoramento -->
+  <section class="slide" data-time="3:55–4:15" data-notes="Monitoramento local com Prometheus. A API expõe um endpoint /metrics com requisições, latência, recomendações por canal e segmento e recomendações de baixa confiança, com o mesmo critério do Golden Set. O docker compose sobe a API e o Prometheus juntos, e três regras de alerta: API fora do ar, taxa de erros alta e muitas recomendações incertas, que indica que o público mudou. Se der tempo, mostre ao vivo: gerar tráfego com perfil incerto e ver o alerta disparar, ou parar a API e ver o ApiForaDoAr. Na AWS, as mesmas métricas e regras vão para o Amazon Managed Prometheus ou para o CloudWatch com alarmes no SNS.">
+    <div class="kicker">8 · MLOps</div>
+    <h2 style="margin-bottom:22px">Monitoramento com Prometheus</h2>
+    <div class="flow">
+      <div class="step"><h3>1. API</h3><p>Expõe <code>/metrics</code> com uso, erros, latência e recomendações</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><h3>2. Prometheus</h3><p>Coleta a cada 5 s e guarda o histórico</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><h3>3. Regras</h3><p>Avaliam as condições de alerta em PromQL</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><h3>4. Alerta</h3><p><span class="tag neutral">pending</span> e depois <span class="tag bad">firing</span></p></div>
+    </div>
+    <div class="grid2" style="margin-top:28px; flex:none">
+      <div class="card">
+        <h3>Métricas de negócio</h3>
+        <ul class="bullets">
+          <li>Recomendações por <b>canal</b> e <b>segmento</b></li>
+          <li>Casos de <b>baixa confiança</b> (critério do Golden Set)</li>
+        </ul>
+      </div>
+      <div class="card warn">
+        <h3 class="warn-t">Alertas</h3>
+        <ul class="bullets">
+          <li><code>ApiForaDoAr</code> · <code>TaxaDeErrosAlta</code></li>
+          <li><code>MuitasRecomendacoesIncertas</code>: o público mudou</li>
+        </ul>
+      </div>
+    </div>
+    <div class="demo" style="margin-top:22px"><span class="icon">▶</span><p><b>Na AWS:</b> mesmo <code style="background:#26324a;color:#e6ebf5">/metrics</code> e mesmas regras no Amazon Managed Prometheus, ou CloudWatch com alarmes no SNS</p></div>
+    <div class="footer"><span>Datathon MLET</span><span>14</span></div>
+  </section>
+
+  <!-- 15. Arquitetura AWS -->
+  <section class="slide" data-time="4:15–4:35" data-notes="Arquitetura-alvo na AWS. Dados e artefatos no S3, treino como job batch registrando no MLflow gerenciado, a mesma imagem Docker publicada no ECR e servida em ECS Fargate atrás do API Gateway. As respostas das campanhas voltam por SQS para atualizar as Betas e publicar um novo policy.json. CloudWatch monitora conversão por canal e drift, com as mesmas métricas e regras do Prometheus local.">
     <div class="kicker">9 · Arquitetura-alvo na nuvem</div>
     <h2>Como iria para produção na AWS</h2>
     <div class="flow">
@@ -352,13 +385,13 @@
       <div class="arrow">→</div>
       <div class="step"><h3>Atualização periódica</h3><p>Novo <code>policy.json</code> publicado no S3</p></div>
       <div class="arrow">→</div>
-      <div class="step"><h3>CloudWatch</h3><p>Latência, conversão por canal e segmento, alarmes de drift</p></div>
+      <div class="step"><h3>CloudWatch</h3><p>Mesmas métricas do Prometheus local, alarmes no SNS</p></div>
     </div>
-    <div class="footer"><span>Datathon MLET</span><span>14</span></div>
+    <div class="footer"><span>Datathon MLET</span><span>15</span></div>
   </section>
 
-  <!-- 15. Conclusão -->
-  <section class="slide" data-time="4:20–5:00" data-notes="Conclusão. Pipeline completo e reproduzível: dados sem vazamento, avaliação honesta, MLflow, API em Docker, 66 testes rodando automaticamente no CI a cada pull request. O bandit com esquecimento bate o A/B; o contexto ainda não compensa com esses dados. Próximos passos: prior informativo e nova rodada pré-registrada. Obrigado.">
+  <!-- 16. Conclusão -->
+  <section class="slide" data-time="4:35–5:00" data-notes="Conclusão. Pipeline completo e reproduzível: dados sem vazamento, avaliação honesta, MLflow, API em Docker com monitoramento no Prometheus, 71 testes rodando automaticamente no CI a cada pull request. O bandit com esquecimento bate o A/B; o contexto ainda não compensa com esses dados. Próximos passos: prior informativo e nova rodada pré-registrada. Obrigado.">
     <div class="kicker">10 · Conclusão</div>
     <h2>O que entregamos e o que aprendemos</h2>
     <div class="grid2">
@@ -367,7 +400,7 @@
         <ul class="bullets">
           <li>Pipeline reproduzível, sem vazamento</li>
           <li>Avaliação off-policy com critério pré-registrado</li>
-          <li>MLflow, API FastAPI em Docker, 66 testes no CI</li>
+          <li>MLflow, API em Docker com Prometheus, 71 testes no CI</li>
         </ul>
       </div>
       <div class="card">
@@ -380,7 +413,7 @@
       </div>
     </div>
     <p style="margin-top:30px" class="muted">Obrigado! Código, notebooks e README completo no repositório.</p>
-    <div class="footer"><span>Datathon MLET</span><span>15</span></div>
+    <div class="footer"><span>Datathon MLET</span><span>16</span></div>
   </section>
 
 </div>

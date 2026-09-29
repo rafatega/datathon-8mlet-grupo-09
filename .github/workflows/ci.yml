@@ -6,7 +6,8 @@
 # roda na mão:
 #
 #   1. a suíte de testes completa (pytest), incluindo a execução dos notebooks;
-#   2. o build da imagem Docker e o smoke test da API (/health e /recommend);
+#   2. o build da imagem Docker, o smoke test da API (/health, /recommend e
+#      /metrics) e a validação da configuração do Prometheus;
 #   3. a análise estática do código: Ruff (qualidade) e Bandit (segurança).
 #
 # Se qualquer passo falhar, o PR fica com um X vermelho e dá para ver o log de
@@ -116,11 +117,27 @@ jobs:
       # A máquina ubuntu-latest do GitHub já vem com Docker e curl instalados,
       # então dá para reaproveitar o mesmo script que a gente usa localmente.
       # Ele faz o build da imagem, sobe o container, chama /health e
-      # /recommend, e testa também a troca de porta pela variável PORT.
+      # /recommend, confere se a recomendação apareceu no /metrics e testa
+      # também a troca de porta pela variável PORT.
       # Chamo com "bash" na frente porque o arquivo não está marcado como
       # executável no git.
       - name: Rodar o smoke test do container
         run: bash scripts/docker_smoke_test.sh
+
+      # Confere se a configuração do Prometheus (monitoring/prometheus.yml) e as
+      # regras de alerta (monitoring/alertas.yml) estão válidas. Uso o promtool,
+      # a ferramenta oficial que já vem dentro da imagem do Prometheus, na mesma
+      # versão do docker-compose.yml. Assim um erro de digitação num alerta é
+      # pego no PR, e não só na hora da demonstração.
+      - name: Validar a configuração do Prometheus
+        run: |
+          docker run --rm -v "$PWD/monitoring:/etc/prometheus:ro" \
+            --entrypoint promtool prom/prometheus:v3.15.0 \
+            check config /etc/prometheus/prometheus.yml
+
+      # Confere se o docker-compose.yml está bem escrito (sem subir nada).
+      - name: Validar o docker-compose.yml
+        run: docker compose config --quiet
 
   # --------------------------------------------------------------------------
   # Job 3: análise estática com Ruff (qualidade) e Bandit (segurança)
